@@ -1,0 +1,11 @@
+Package: reVAR
+Type: Package
+Title: Recurrent Events Analysis With Data Collected at Informative Visits 
+Author: Yifei Sun
+Maintainer: Yifei Sun <ys3072@cumc.columbia.edu>
+Description: Fit proportional rate model with intermitently measured time-dependent covariates, under the visiting at random assumption
+License: GPL-3
+Encoding: UTF-8
+Imports: survival, nleqslv
+LazyData: true
+RoxygenNote: 6.0.1
