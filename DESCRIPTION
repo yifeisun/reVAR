@@ -8,4 +8,5 @@ License: GPL-3
 Encoding: UTF-8
 Imports: survival, nleqslv
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2
+Version: 0.0.1

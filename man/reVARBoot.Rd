@@ -4,23 +4,71 @@
 \alias{reVARBoot}
 \title{Resampling for variance estimation using reVAR}
 \usage{
-reVARBoot(nonEventDF1, nonEventDF2, eventDF, tau, h, B)
+reVARBoot(
+  nonEventDF1,
+  nonEventDF2,
+  eventDF,
+  tau,
+  h,
+  baseline = FALSE,
+  h2 = h,
+  n0 = 100,
+  B = 500
+)
 }
 \arguments{
-\item{nonEventDF1}{A data  frame that is used for fitting the non-event time model, contains ID, event time information and covariates}
+\item{nonEventDF1}{A data frame that is used for fitting the non-event time model, contains ID, event time information and covariates.
+Each row records the covariates on a time interval.
+The first four columns must be \code{ID}, \code{Start}, \code{End}, \code{Status}:
+\code{ID} is the subject ID for each observation;
+\code{Start} is the starting time of the interval;
+\code{End} is the ending time of the interval;
+\code{Status} is the status indicator, 1 = non-event visit, 0 = no.
+The other columns are covariate values for the non-event model on the time interval (\code{Start}, \code{End}].}
 
-\item{nonEventDF2}{A dataframe that contains the ID, non-event visit times and covariates measured at each non-event visit}
+\item{nonEventDF2}{A data frame that contains the ID, non-event visit times and covariates (for the event model) measured at each non-event visit.
+The first two columns must be \code{ID} and \code{Time}:
+\code{ID} is the subject ID for each observation;
+\code{Time} include time zero and the non-event visit times.
+The other columns are covariate values measured at \code{Time}.}
 
-\item{eventDF}{A data frame that contains the ID, event visit times and covariates measured at each event visit}
+\item{eventDF}{A data frame that contains the ID, event visit times and covariates (for the event model) measured at each event visit.
+The first two columns must be \code{ID} and \code{Time}:
+\code{ID} is the subject ID for each observation;
+\code{Time} include time zero and the event times.
+The other columns are covariate values measured at \code{Time}.}
 
-\item{tau}{Data on [0,tau] will be used in the estimating equation in the second step}
+\item{tau}{Numeric value: data on [0,\code{tau}] will be used
+in the estimating equation in the second step.}
 
-\item{h}{Bandwidth for kernel estimation}
+\item{h}{Numeric value: bandwidth for kernel estimation in the estimating equations.}
 
-\item{B}{Number of bootstrap samples}
+\item{baseline}{Logical value: if TRUE, the cumulative baseline rate functions of the event and non-event processes are returned.}
+
+\item{h2}{Numeric value: bandwidth for kernel estimation for the baseline rate function in the non-event visit model. Only needed if \code{baseline = TRUE}.}
+
+\item{n0}{Integer value: baseline cumulative rate functions at \code{n0} equally spaced points on [0,\code{tau}] are returned. Only needed if \code{baseline = TRUE}.}
+
+\item{B}{Integer value: number of bootstrap samples.}
 }
 \value{
-A matrix of estimates from bootstrapped samples
+A list containing the following components:
+
+\item{beta}{A matrix of the coefficients in the event model from the bootstrap samples;
+each row corresponds to the estimate on a bootstrapp sample}
+
+\item{alpha}{A matrix of the coefficients in the non-event visit model from the bootstrap samples;
+each row corresponds to the estimate on a bootstrapp sample}
+
+If \code{baseline = TRUE}, the function also returns the following components:
+
+\item{t0}{A vector of time points on which the baseline functions are evaluated}
+
+\item{M0}{A matrix of the cumulative baseline rate function in the event model;
+each row corresponds to the estimate on a bootstrapp sample}
+
+\item{L0}{A matrix of the cumulative baseline rate function in the non-event visit model;
+each row corresponds to the estimate on a bootstrapp sample}
 }
 \description{
 This function gives the estimates using bootstrapped samples.
@@ -28,7 +76,11 @@ This function gives the estimates using bootstrapped samples.
 \examples{
 set.seed(1)
 dat <- genData(100)
-estBoot <- reVARBoot(dat$nonEventDF1,dat$nonEventDF2,dat$eventDF,4.5, h = 2*100^(-1/3), B = 500)
-# Variance Estimation
-apply(estBoot, 2, sd)
+ndf1 <- subset(dat$nonEventDF1_s2, select = -Status2)
+ndf2 <- dat$nonEventDF2
+edf <- dat$eventDF
+fit <- reVAR(ndf1, ndf2, edf, tau = 4.5, h = 0.4)
+bt <- reVARBoot(ndf1, ndf2, edf, tau = 4.5, h = 0.4, B = 500)
+# Variance Estimation for coefficients in the event model
+apply(bt$beta, 2, sd)
 }

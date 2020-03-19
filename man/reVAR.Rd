@@ -4,28 +4,74 @@
 \alias{reVAR}
 \title{Fit the proportional rate model with intermittently measured time-dependent covariates under VAR}
 \usage{
-reVAR(nonEventDF1, nonEventDF2, eventDF, tau, h)
+reVAR(
+  nonEventDF1,
+  nonEventDF2,
+  eventDF,
+  tau,
+  h,
+  baseline = FALSE,
+  h2 = h,
+  n0 = 100
+)
 }
 \arguments{
-\item{nonEventDF1}{A data frame that is used for fitting the non-event time model, contains ID, event time information and covariates}
+\item{nonEventDF2}{A data frame that contains the ID, non-event visit times and covariates (for the event model) measured at each non-event visit.
+The first two columns must be \code{ID} and \code{Time}:
+\code{ID} is the subject ID for each observation;
+\code{Time} include time zero and the non-event visit times.
+The other columns are covariate values measured at \code{Time}.}
 
-\item{nonEventDF2}{A data frame that contains the ID, non-event visit times and covariates measured at each non-event visit}
+\item{eventDF}{A data frame that contains the ID, event visit times and covariates (for the event model) measured at each event visit.
+The first two columns must be \code{ID} and \code{Time}:
+\code{ID} is the subject ID for each observation;
+\code{Time} include time zero and the event times.
+The other columns are covariate values measured at \code{Time}.}
 
-\item{eventDF}{A data frame that contains the ID, event visit times and covariates measured at each event visit}
+\item{tau}{Numeric value: data on [0,\code{tau}] will be used in the estimating equation in the second step.}
 
-\item{tau}{Data on [0,tau] will be used in the estimating equation in the second step}
+\item{h}{Numeric value: bandwidth for kernel estimation in the estimating equations.}
 
-\item{h}{Bandwidth for kernel estimation}
+\item{baseline}{Logical value: if TRUE, the cumulative baseline rate functions of the event and non-event processes are returned.}
+
+\item{h2}{Numeric value: bandwidth for kernel estimation for the baseline rate function in the non-event visit model. Only needed if \code{baseline = TRUE}.}
+
+\item{n0}{Integer value: baseline cumulative rate functions at \code{n0} equally spaced points on [0,\code{tau}] are returned. Only needed if \code{baseline = TRUE}.}
 }
 \value{
-A list of parameter estimates in the first and second step
+A list containing the following components:
+
+\item{beta}{A vector of coefficients in the event model}
+
+\item{alpha}{A vector of coefficients in the non-event visit model}
+
+If \code{baseline = TRUE}, the function also returns the following components:
+
+\item{t0}{A vector of time points on which the baseline functions are evaluated}
+
+\item{M0}{A vector of the cumulative baseline rate function in the event model}
+
+\item{L0}{A vector of the cumulative baseline rate function in the non-event visit model}
 }
 \description{
-This function fit the proportional rate model with intermittently
-measured time-dependent covariates under VAR.
+This function fits the proportional rate model with intermittently
+measured time-dependent covariates under the visiting at random (VAR) assumption.
+}
+\details{
+#' @param nonEventDF1 A data frame that is used for fitting the non-event time model, contains ID, event time information and covariates.
+Each row records the covariates on a time interval.
+The first four columns must be \code{ID}, \code{Start}, \code{End}, \code{Status}:
+\code{ID} is the subject ID for each observation;
+\code{Start} is the starting time of the interval;
+\code{End} is the ending time of the interval;
+\code{Status} is the status indicator, 1 = non-event visit, 0 = no.
+The other columns are covariate values for the non-event model on the time interval (\code{Start}, \code{End}].
 }
 \examples{
 set.seed(1)
 dat <- genData(100)
-fit <- reVAR(dat$nonEventDF1,dat$nonEventDF2,dat$eventDF, tau = 4.5, h = 2*100^(-1/3))
+ndf1 <- subset(dat$nonEventDF1_s2, select = -Status2)
+ndf2 <- dat$nonEventDF2
+edf <- dat$eventDF
+fit <- reVAR(ndf1, ndf2, edf, tau = 4.5, h = 0.4)
 }

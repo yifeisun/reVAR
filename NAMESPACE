@@ -3,3 +3,5 @@
 export(genData)
 export(reVAR)
 export(reVARBoot)
+export(reVCAR)
+export(reVCARBoot)
